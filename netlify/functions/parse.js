@@ -15,7 +15,7 @@ export default async (req) => {
   }
 
   try {
-    const { input, mode } = await req.json();
+    const { input, mode, tasks } = await req.json();
 
     if (mode === 'quote') {
       const quote = await getMotivationalQuote(apiKey);
@@ -33,15 +33,24 @@ export default async (req) => {
     }
 
     const today = new Date().toISOString().split('T')[0];
+    const taskListForPrompt = Array.isArray(tasks)
+      ? tasks.map((t) => ({ id: t.id, description: t.description, due_date: t.due_date }))
+      : [];
 
     const systemPrompt = `You are an AI assistant that helps manage tasks. Today's date is ${today}.
 Convert the user's input into a structured JSON action. Respond with ONLY valid JSON, no other text.
 
+Here is the user's CURRENT task list (use this to resolve which task they mean, especially for removal):
+${JSON.stringify(taskListForPrompt)}
+
 Formats:
 - To add a task: {"action": "add_task", "description": "...", "due_date": "YYYY-MM-DD"}
 - To view tasks: {"action": "view_tasks"}
-- To remove a task: {"action": "remove_task", "description": "..."}
+- To remove a task: {"action": "remove_task", "id": "<the exact id from the task list above that best matches what the user described>"}
+- If removal is requested but no task in the list clearly matches: {"action": "remove_task_not_found"}
 - If you cannot understand the input: {"action": "unknown"}
+
+When removing, always resolve to the exact "id" from the current task list above based on the closest matching description — never invent or paraphrase a description for removal.
 
 User Input: ${input}`;
 

@@ -57,18 +57,15 @@ export default function App() {
       const err = await res.json();
       throw new Error(err.error || 'Failed to add task');
     }
-    await loadTasks();
+    const data = await res.json();
+    // Update UI immediately from the response instead of re-fetching,
+    // since Blobs reads can lag slightly right after a write.
+    setTasks((prev) => [...prev, data.task]);
   }
 
   async function removeTaskById(id) {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
     await fetch(`/api/tasks?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-    await loadTasks();
-  }
-
-  async function removeTaskByName(name) {
-    await fetch(`/api/tasks?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
-    await loadTasks();
-    setStatus({ type: 'info', text: `Removed "${name}"` });
   }
 
   async function handleManualAdd(e) {
@@ -96,7 +93,7 @@ export default function App() {
       const res = await fetch('/api/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: nlInput.trim() }),
+        body: JSON.stringify({ input: nlInput.trim(), tasks }),
       });
       const structured = await res.json();
 
@@ -104,7 +101,14 @@ export default function App() {
         await addTask(structured.description, structured.due_date);
         setStatus({ type: 'info', text: `Added: "${structured.description}" — due ${structured.due_date}` });
       } else if (structured.action === 'remove_task') {
-        await removeTaskByName(structured.description);
+        const match = tasks.find((t) => t.id === structured.id);
+        await removeTaskById(structured.id);
+        setStatus({
+          type: 'info',
+          text: match ? `Removed "${match.description}"` : 'Task removed.',
+        });
+      } else if (structured.action === 'remove_task_not_found') {
+        setStatus({ type: 'error', text: "Couldn't find a matching task to remove. Check the exact wording in your list." });
       } else if (structured.action === 'view_tasks') {
         await loadTasks();
         setStatus({ type: 'info', text: 'Task list refreshed below.' });
