@@ -27,18 +27,52 @@ html, body, #root {
 body {
   margin: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(139, 127, 240, 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 15% 0%, rgba(139, 127, 240, 0.16), transparent),
+    radial-gradient(ellipse 50% 40% at 100% 20%, rgba(240, 112, 159, 0.09), transparent),
+    radial-gradient(ellipse 60% 50% at 85% 100%, rgba(139, 127, 240, 0.10), transparent),
+    linear-gradient(180deg, #0d0b14 0%, #100d1a 50%, #0d0b14 100%),
     var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: 'Space Grotesk', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(139, 127, 240, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 127, 240, 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, black, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .app {
-  max-width: 720px;
+  width: 100%;
+  max-width: 820px;
   margin: 0 auto;
-  padding: 48px 24px 80px;
+  padding: 64px 32px 100px;
   min-height: 100%;
+}
+
+@media (min-width: 900px) {
+  .app {
+    padding-top: 88px;
+  }
 }
 
 .header {

@@ -126,6 +126,7 @@ export default function App() {
   const sorted = [...tasks].sort((a, b) => a.due_date.localeCompare(b.due_date));
 
   return (
+    <div className="page-shell">
     <div className="app">
       <div className="header">
         <p className="eyebrow">Agentic Productivity Assistant</p>
@@ -206,6 +207,7 @@ export default function App() {
         Rebuilt from the original CLI tool. Storage: Netlify Blobs. AI parsing: OpenAI GPT-4o.
         <br />
         Planned next: Google Calendar sync (requires OAuth setup, not yet wired up).
+      </div>
       </div>
     </div>
   );
